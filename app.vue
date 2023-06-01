@@ -5,6 +5,12 @@
     <h1>Assignment solution</h1>
     <p>Assignment was implemented using Nuxt 3.</p>
     <p>
+      Repo available at
+      <a href="https://github.com/josepetew/frontend-assesment" target="_blank"
+        >https://github.com/josepetew/frontend-assesment</a
+      >
+    </p>
+    <p>
       Solution is responsive, there is no resize event handlers implemented yet
       so please refresh the page to text on smaller screens. It also works on
       mobile devices.

@@ -1,6 +1,9 @@
 <template>
   <div class="container">
-    <Slider :imagesUrls="imagesUrls" />
+    <h4>initialImageIndex=0</h4>
+    <Slider :imagesUrls="imagesUrls" :initialImageIndex="0" />
+    <h4>initialImageIndex=2</h4>
+    <Slider :imagesUrls="imagesUrls" :initialImageIndex="2" />
     <aside>Drag to change image</aside>
     <h1>Assignment solution</h1>
     <p>Assignment was implemented using Nuxt 3.</p>

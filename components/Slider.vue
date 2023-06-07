@@ -15,15 +15,23 @@
 </template>
 
 <script>
+import { onMounted, ref, watch } from "vue";
+
 export default {
   props: {
     imagesUrls: {
       type: Array,
       required: true,
     },
+    initialImageIndex: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   setup(props) {
     const images = ref([]);
+    const imagesLoaded = ref([]);
     const canvasRef = ref(null);
     const sliderRef = ref(null);
     let dragging = ref(false);
@@ -55,19 +63,39 @@ export default {
       if (newCurrentX < minCurrentX) newCurrentX = minCurrentX;
       currentX.value = newCurrentX;
       startX.value = clientX;
+      preloadImagesAround();
     };
 
     const endDrag = () => {
       toggleDragging(false);
+      preloadImagesAround();
     };
 
-    const loadImage = async (url) => {
+    const loadImage = async (index) => {
+      if (imagesLoaded.value[index]) return;
       return new Promise((resolve, reject) => {
         const img = new Image();
-        img.onload = () => resolve(img);
+        img.onload = () => {
+          imagesLoaded.value[index] = true;
+          resolve(img);
+        };
         img.onerror = reject;
-        img.src = url;
+        img.src = props.imagesUrls[index];
       });
+    };
+
+    const preloadImagesAround = async () => {
+      let imgIndex = Math.min(
+        Math.floor(Math.abs(currentX.value / sliderRef.value.clientWidth)),
+        props.imagesUrls.length - 1
+      );
+      if (imgIndex > 0 && !imagesLoaded.value[imgIndex - 1])
+        images.value[imgIndex - 1] = await loadImage(imgIndex - 1);
+      if (
+        imgIndex < props.imagesUrls.length - 1 &&
+        !imagesLoaded.value[imgIndex + 1]
+      )
+        images.value[imgIndex + 1] = await loadImage(imgIndex + 1);
     };
 
     const renderScene = () => {
@@ -92,19 +120,23 @@ export default {
         let imgY = (height - imgHeight) / 2;
         ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
       };
-      drawImage(images.value[imgIndex], offsetX);
-      if (nextImgIndex !== imgIndex)
+      if (imagesLoaded.value[imgIndex])
+        drawImage(images.value[imgIndex], offsetX);
+      if (imagesLoaded.value[nextImgIndex] && nextImgIndex !== imgIndex)
         drawImage(images.value[nextImgIndex], offsetX + width);
     };
 
     onMounted(async () => {
-      for (const url of props.imagesUrls) {
-        const img = await loadImage(url);
-        images.value.push(img);
-      }
+      images.value = new Array(props.imagesUrls.length);
+      imagesLoaded.value = new Array(props.imagesUrls.length).fill(false);
+      images.value[props.initialImageIndex] = await loadImage(
+        props.initialImageIndex
+      );
+      currentX.value = -props.initialImageIndex * sliderRef.value.clientWidth;
       canvasRef.value.width = sliderRef.value.clientWidth;
       canvasRef.value.height = sliderRef.value.clientHeight;
       renderScene();
+      preloadImagesAround();
     });
 
     watch(currentX, () => {

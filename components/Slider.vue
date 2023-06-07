@@ -10,7 +10,7 @@
     @touchmove="drag"
     @touchend="endDrag"
   >
-    <canvas ref="canvasRef" class="slider-canvas"></canvas>
+    <canvas ref="canvasRef"></canvas>
   </div>
 </template>
 
@@ -158,9 +158,5 @@ export default {
 
 .slider-container.drag-active {
   cursor: grabbing;
-}
-
-.slider-canvas {
-  background: rgb(242, 242, 242);
 }
 </style>
